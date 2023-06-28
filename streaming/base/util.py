@@ -79,12 +79,11 @@ def bytes_to_int(bytes_str: str) -> int:
     for suffix in units:
         bytes_str = bytes_str.lower().strip()
         if bytes_str.lower().endswith(suffix):
-            return int(float(bytes_str[0:-len(suffix)]) * units[suffix])
+            return int(float(bytes_str[:-len(suffix)]) * units[suffix])
     else:
         # Convert bytes to an integer
-        if bytes_str.endswith('b') and bytes_str[0:-1].isdigit():
-            return int(bytes_str[0:-1])
-        # Convert string representation of a number to an integer
+        if bytes_str.endswith('b') and bytes_str[:-1].isdigit():
+            return int(bytes_str[:-1])
         elif bytes_str.isdigit():
             return int(bytes_str)
         else:

@@ -76,9 +76,7 @@ class StreamingInsideWebVid(StreamingDataset):
         Returns:
             Any: The sample.
         """
-        obj = super().get_item(idx)
-        # Processing goes here.
-        return obj
+        return super().get_item(idx)
 
 
 class StreamingOutsideGIWebVid(StreamingDataset):

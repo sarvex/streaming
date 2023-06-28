@@ -351,9 +351,13 @@ class StreamingDataset(Array, IterableDataset):
                 self.cache_limit = bytes_to_int(self.cache_limit)
             min_cache_usage = sum(map(lambda stream: stream.get_index_size(), streams))
             if self.cache_limit <= min_cache_usage:
-                raise ValueError(f'Minimum cache usage ({min_cache_usage} bytes) is larger than ' +
-                                 f'the cache limit ({self.cache_limit} bytes). Please raise ' +
-                                 f'`cache_limit`.')
+                raise ValueError(
+                    (
+                        f'Minimum cache usage ({min_cache_usage} bytes) is larger than '
+                        + f'the cache limit ({self.cache_limit} bytes). Please raise '
+                        + '`cache_limit`.'
+                    )
+                )
 
         # Build the shard index (for partitioning and mapping samples to shards).
         self.samples_per_shard = np.array([shard.samples for shard in self.shards], np.int64)
@@ -616,10 +620,7 @@ class StreamingDataset(Array, IterableDataset):
         world = World()
         epoch = self.next_epoch - 1
         epoch, offset = self._resume(world, epoch)
-        if from_beginning:
-            sample_in_epoch = num_samples
-        else:
-            sample_in_epoch = offset + num_samples
+        sample_in_epoch = num_samples if from_beginning else offset + num_samples
         return {
             'epoch': epoch,
             'sample_in_epoch': sample_in_epoch,
@@ -675,7 +676,7 @@ class StreamingDataset(Array, IterableDataset):
                 choose_per_stream_shard = samples_per_stream_shard
             else:
                 choose_per_stream_shard = \
-                    samples_per_stream_shard * stream_choose // stream_samples
+                        samples_per_stream_shard * stream_choose // stream_samples
                 shortfall = stream_choose - choose_per_stream_shard.sum()
                 indices = rng.choice(num_stream_shards, shortfall, False)
                 choose_per_stream_shard[indices] += 1
@@ -686,21 +687,17 @@ class StreamingDataset(Array, IterableDataset):
                                                              choose_per_stream_shard):
                 # Calculate shuffle units.
                 shard_shuffle_units = [shard_samples] * (shard_choose // shard_samples)
-                remainder = shard_choose % shard_samples
-                if remainder:
+                if remainder := shard_choose % shard_samples:
                     shard_shuffle_units.append(remainder)
                 shuffle_units.append(shard_shuffle_units)
 
                 # Calculate sample IDs of any full repeats.
                 shard_sample_offset = self.sample_offset_per_shard[shard_id]
-                num_full_repeats = shard_choose // shard_samples
-                if num_full_repeats:
+                if num_full_repeats := shard_choose // shard_samples:
                     full_repeat = shard_sample_offset + np.arange(shard_samples)
                     sample_ids += [full_repeat] * num_full_repeats
 
-                # Calculate sample IDs of a possible partial repeat.
-                shortfall = shard_choose % shard_samples
-                if shortfall:
+                if shortfall := shard_choose % shard_samples:
                     partial_repeat = shard_sample_offset + rng.choice(
                         shard_samples, shortfall, False)
                     partial_repeat.sort()
@@ -726,8 +723,9 @@ class StreamingDataset(Array, IterableDataset):
         """
         # Ensure that num_canonical_nodes has been set.
         if self.num_canonical_nodes is None:
-            raise RuntimeError(f'`num_canonical_nodes` can never be None. ' +
-                               f'Provide a positive integer.')
+            raise RuntimeError(
+                f'`num_canonical_nodes` can never be None. Provide a positive integer.'
+            )
 
         # Sample each shard of each stream according to their proportions/repeats/samples. This
         # gives us the resampled size of each underlying shard, and a mapping from each fake "big"
@@ -764,9 +762,12 @@ class StreamingDataset(Array, IterableDataset):
 
         # Validate shape.
         if sample_ids.ndim != ndim:
-            raise ValueError(f'Sample IDs must be of {ndim}D shape (num physical nodes, ' +
-                             f'ranks per node, workers per rank, batches per worker, ' +
-                             f'batch size). Instead, found as {sample_ids.ndim}D shape.')
+            raise ValueError(
+                (
+                    f'Sample IDs must be of {ndim}D shape (num physical nodes, ranks per node, workers per rank, batches per worker, '
+                    + f'batch size). Instead, found as {sample_ids.ndim}D shape.'
+                )
+            )
 
         # Save the generated epoch shape to shared memory.
         name = _get_path(self._shm_prefix_int, EPOCH_SHAPE)
@@ -883,14 +884,15 @@ class StreamingDataset(Array, IterableDataset):
             # Check the shard's last access time. If it is NEVER, there are no downloaded shards to
             # evict. If any shards are currently being downloaded, wait, else raise an error.
             if self._shard_access_times[shard_id] == NEVER:
-                if (self._shard_states.numpy() == _ShardState.DOWNLOADING).any():
-                    sleep(TICK)
-                    continue
-                else:
+                if not (
+                    self._shard_states.numpy() == _ShardState.DOWNLOADING
+                ).any():
                     raise ValueError(
                         f'Tried to evict a shard {shard_id}, but no shards are present to evict ' +
                         f'(cache usage {self.cache_usage} of {self.cache_limit})')
 
+                sleep(TICK)
+                continue
             # The shard has a valid timestamp. Now, verify that it is actually present. There is an
             # edge case where it may not be present (see the note in get_item()). If not present,
             # pick the next lowest shard.
@@ -1057,13 +1059,13 @@ class StreamingDataset(Array, IterableDataset):
             # Main process failed. Let the threads know to terminate.
             self._event.set()
             if self.cache_limit:
-                raise RuntimeError(f'{errors[-1]}. StreamingDataset repeatedly failed to ' +
-                                   f'download a shard. This may be due to thrashing caused by ' +
-                                   f'`cache_limit` being set too low.')
+                raise RuntimeError(
+                    f'{errors[-1]}. StreamingDataset repeatedly failed to download a shard. This may be due to thrashing caused by `cache_limit` being set too low.'
+                )
             else:
-                raise RuntimeError(f'{errors[-1]}. Check if the shard file exists in your ' +
-                                   f'remote location or have you deleted the shard file from ' +
-                                   f'the local directory?')
+                raise RuntimeError(
+                    f'{errors[-1]}. Check if the shard file exists in your remote location or have you deleted the shard file from the local directory?'
+                )
 
         return sample
 
@@ -1078,8 +1080,7 @@ class StreamingDataset(Array, IterableDataset):
         Raises:
             Exception: re-raises the exception.
         """
-        exception = future.exception()
-        if exception:
+        if exception := future.exception():
             # Set the event to let the other threadpool threads know about the exception.
             self._event.set()
             # Re-raise the exception.

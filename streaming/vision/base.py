@@ -37,10 +37,7 @@ class StandardTransform:
         Returns:
             Tuple[Any, Any]: Transformed input and output.
         """
-        if self.transform:
-            x = self.transform(x)
-        else:
-            x = to_tensor(x)
+        x = self.transform(x) if self.transform else to_tensor(x)
         if self.target_transform:
             y = self.target_transform(y)
         return x, y

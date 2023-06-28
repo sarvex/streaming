@@ -38,16 +38,16 @@ class TestCloudUploader:
 
     @pytest.mark.parametrize('out', [(), ('s3://bucket/dir',), ('./dir1', './dir2', './dir3')])
     def test_invalid_out_parameter_length(self, out: Any):
-        with pytest.raises(ValueError, match=f'Invalid `out` argument.*'):
+        with pytest.raises(ValueError, match='Invalid `out` argument.*'):
             _ = CloudUploader.get(out=out)
 
     @pytest.mark.parametrize('out', [('./dir1', 'gcs://bucket/dir/'), ('./dir1', None)])
     def test_invalid_out_parameter_type(self, out: Any):
-        with pytest.raises(ValueError, match=f'Invalid Cloud provider prefix.*'):
+        with pytest.raises(ValueError, match='Invalid Cloud provider prefix.*'):
             _ = CloudUploader.get(out=out)
 
     def test_local_directory_is_empty(self, local_remote_dir: Tuple[str, str]):
-        with pytest.raises(FileExistsError, match=f'Directory is not empty.*'):
+        with pytest.raises(FileExistsError, match='Directory is not empty.*'):
             local, _ = local_remote_dir
             os.makedirs(local, exist_ok=True)
             local_file_path = os.path.join(local, 'file.txt')
@@ -90,16 +90,16 @@ class TestS3Uploader:
 
     @pytest.mark.parametrize('out', ['ss4://bucket/dir'])
     def test_invalid_remote_str(self, out: str):
-        with pytest.raises(ValueError, match=f'Invalid Cloud provider prefix.*'):
+        with pytest.raises(ValueError, match='Invalid Cloud provider prefix.*'):
             _ = S3Uploader(out=out)
 
     @pytest.mark.parametrize('out', ['ss4://bucket/dir', ('./dir1', 'gcs://bucket/dir/')])
     def test_invalid_remote_list(self, out: Any):
-        with pytest.raises(ValueError, match=f'Invalid Cloud provider prefix.*'):
+        with pytest.raises(ValueError, match='Invalid Cloud provider prefix.*'):
             _ = S3Uploader(out=out)
 
     def test_local_directory_is_empty(self, local_remote_dir: Tuple[str, str]):
-        with pytest.raises(FileExistsError, match=f'Directory is not empty.*'):
+        with pytest.raises(FileExistsError, match='Directory is not empty.*'):
             local, _ = local_remote_dir
             os.makedirs(local, exist_ok=True)
             local_file_path = os.path.join(local, 'file.txt')
@@ -154,16 +154,16 @@ class TestGCSUploader:
 
     @pytest.mark.parametrize('out', ['gcs://bucket/dir'])
     def test_invalid_remote_str(self, out: str):
-        with pytest.raises(ValueError, match=f'Invalid Cloud provider prefix.*'):
+        with pytest.raises(ValueError, match='Invalid Cloud provider prefix.*'):
             _ = GCSUploader(out=out)
 
     @pytest.mark.parametrize('out', ['gcs://bucket/dir', ('./dir1', 'ocix://bucket/dir/')])
     def test_invalid_remote_list(self, out: Any):
-        with pytest.raises(ValueError, match=f'Invalid Cloud provider prefix.*'):
+        with pytest.raises(ValueError, match='Invalid Cloud provider prefix.*'):
             _ = GCSUploader(out=out)
 
     def test_local_directory_is_empty(self, local_remote_dir: Tuple[str, str]):
-        with pytest.raises(FileExistsError, match=f'Directory is not empty.*'):
+        with pytest.raises(FileExistsError, match='Directory is not empty.*'):
             local, _ = local_remote_dir
             os.makedirs(local, exist_ok=True)
             local_file_path = os.path.join(local, 'file.txt')
@@ -205,16 +205,16 @@ class TestAzureUploader:
 
     @pytest.mark.parametrize('out', ['ss4://bucket/dir'])
     def test_invalid_remote_str(self, out: str):
-        with pytest.raises(ValueError, match=f'Invalid Cloud provider prefix.*'):
+        with pytest.raises(ValueError, match='Invalid Cloud provider prefix.*'):
             _ = AzureUploader(out=out)
 
     @pytest.mark.parametrize('out', ['ss4://bucket/dir', ('./dir1', 'gcs://bucket/dir/')])
     def test_invalid_remote_list(self, out: Any):
-        with pytest.raises(ValueError, match=f'Invalid Cloud provider prefix.*'):
+        with pytest.raises(ValueError, match='Invalid Cloud provider prefix.*'):
             _ = AzureUploader(out=out)
 
     def test_local_directory_is_empty(self, local_remote_dir: Tuple[str, str]):
-        with pytest.raises(FileExistsError, match=f'Directory is not empty.*'):
+        with pytest.raises(FileExistsError, match='Directory is not empty.*'):
             local, _ = local_remote_dir
             os.makedirs(local, exist_ok=True)
             local_file_path = os.path.join(local, 'file.txt')
@@ -238,16 +238,16 @@ class TestAzureDataLakeUploader:
 
     @pytest.mark.parametrize('out', ['ss4://container/dir'])
     def test_invalid_remote_str(self, out: str):
-        with pytest.raises(ValueError, match=f'Invalid Cloud provider prefix.*'):
+        with pytest.raises(ValueError, match='Invalid Cloud provider prefix.*'):
             _ = AzureDataLakeUploader(out=out)
 
     @pytest.mark.parametrize('out', ['ss4://container/dir', ('./dir1', 'gcs://container/dir/')])
     def test_invalid_remote_list(self, out: Any):
-        with pytest.raises(ValueError, match=f'Invalid Cloud provider prefix.*'):
+        with pytest.raises(ValueError, match='Invalid Cloud provider prefix.*'):
             _ = AzureDataLakeUploader(out=out)
 
     def test_local_directory_is_empty(self, local_remote_dir: Tuple[str, str]):
-        with pytest.raises(FileExistsError, match=f'Directory is not empty.*'):
+        with pytest.raises(FileExistsError, match='Directory is not empty.*'):
             local, _ = local_remote_dir
             os.makedirs(local, exist_ok=True)
             local_file_path = os.path.join(local, 'file.txt')

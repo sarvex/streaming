@@ -102,10 +102,10 @@ class MDSWriter(JointWriter):
             if size is None:
                 size = len(datum)
                 sizes.append(size)
-            else:
-                if size != len(datum):
-                    raise KeyError(f'Unexpected data size; was this data typed with the correct ' +
-                                   f'encoding ({encoding})?')
+            elif size != len(datum):
+                raise KeyError(
+                    f'Unexpected data size; was this data typed with the correct encoding ({encoding})?'
+                )
             data.append(datum)
         head = np.array(sizes, np.uint32).tobytes()
         body = b''.join(data)

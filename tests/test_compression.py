@@ -276,8 +276,5 @@ def test_dataset_compression(compressed_local_remote_dir: Tuple[str, str, str],
 
     dataset = StreamingDataset(local=local, remote=compressed, shuffle=shuffle)
 
-    for _ in dataset:
-        pass  # download sample
-
     dcmp = dircmp(remote, local)
     check_for_diff_files(dcmp, compression_ext)

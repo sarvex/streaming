@@ -153,8 +153,7 @@ def plot_compression_rates(data: List[Datum], algo2color: Dict[str, Optional[str
         dec_sizes = algo2dec_sizes[algo]
         enc_times = algo2enc_times[algo]
         ratios = np.array(dec_sizes) / np.array(enc_times)
-        color = algo2color[algo]
-        if color:
+        if color := algo2color[algo]:
             plt.plot(dec_sizes, ratios, c=color, label=algo, lw=line_width)
 
     plt.xscale('log')
@@ -194,8 +193,7 @@ def plot_compressed_sizes(data: List[Datum], algo2color: Dict[str, Optional[str]
         dec_sizes = algo2dec_sizes[algo]
         enc_sizes = algo2enc_sizes[algo]
         ratios = 100 * np.array(enc_sizes) / np.array(dec_sizes)
-        color = algo2color[algo]
-        if color:
+        if color := algo2color[algo]:
             plt.plot(dec_sizes, ratios, c=color, label=algo, lw=line_width)
 
     plt.xscale('log')
@@ -234,8 +232,7 @@ def plot_decompression_rates(data: List[Datum], algo2color: Dict[str, Optional[s
         dec_sizes = algo2dec_sizes[algo]
         dec_times = algo2dec_times[algo]
         ratios = np.array(dec_sizes) / np.array(dec_times)
-        color = algo2color[algo]
-        if color:
+        if color := algo2color[algo]:
             plt.plot(dec_sizes, ratios, c=color, label=algo, lw=line_width)
 
     plt.xscale('log')

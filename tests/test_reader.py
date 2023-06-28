@@ -55,9 +55,7 @@ def test_dataset_sample_order(mds_dataset_dir: Any, batch_size: int, remote_arg:
         remote_dir = None
     elif remote_arg == 'same':
         local_dir = remote_dir
-    elif remote_arg == 'different':
-        pass
-    else:
+    elif remote_arg != 'different':
         assert False, f'Unknown value of remote_arg: {remote_arg}'
 
     # Build StreamingDataset
@@ -110,11 +108,7 @@ def test_dataset_determinism(mds_dataset_dir: Any, batch_size: int, seed: int, s
                                batch_size=batch_size,
                                shuffle_seed=seed)
 
-    # Append sample ID
-    sample_order = []
-    for sample in dataset:
-        sample_order.append(sample['id'])
-
+    sample_order = [sample['id'] for sample in dataset]
     del dataset
 
     # Build StreamingDataset again to test deterministic sample ID
@@ -124,11 +118,7 @@ def test_dataset_determinism(mds_dataset_dir: Any, batch_size: int, seed: int, s
                                batch_size=batch_size,
                                shuffle_seed=seed)
 
-    # Append sample ID
-    second_sample_order = []
-    for sample in dataset:
-        second_sample_order.append(sample['id'])
-
+    second_sample_order = [sample['id'] for sample in dataset]
     assert len(sample_order) == len(second_sample_order)
     assert sample_order == second_sample_order
 
@@ -152,8 +142,6 @@ def test_reader_download_fail(mds_dataset_dir: Any, missing_file: str, seed: int
                                    shuffle=False,
                                    download_timeout=1,
                                    shuffle_seed=seed)
-        for _ in dataset:
-            pass
     assert exc_info.match(r'.*No such file or directory*')
 
 
@@ -168,10 +156,14 @@ def test_reader_after_crash(mds_dataset_dir: Any, created_ago: float, download_t
     if not os.path.exists(local_dir):
         os.mkdir(local_dir)
 
-    shutil.copy(os.path.join(remote_dir, f'index.json'),
-                os.path.join(local_dir, f'index.json.tmp'))
-    shutil.copy(os.path.join(remote_dir, f'shard.00003.mds'),
-                os.path.join(local_dir, f'shard.00003.mds.tmp'))
+    shutil.copy(
+        os.path.join(remote_dir, 'index.json'),
+        os.path.join(local_dir, 'index.json.tmp'),
+    )
+    shutil.copy(
+        os.path.join(remote_dir, 'shard.00003.mds'),
+        os.path.join(local_dir, 'shard.00003.mds.tmp'),
+    )
     time.sleep(created_ago)
 
     dataset = StreamingDataset(local=local_dir,
@@ -179,10 +171,6 @@ def test_reader_after_crash(mds_dataset_dir: Any, created_ago: float, download_t
                                shuffle=False,
                                download_timeout=download_timeout,
                                shuffle_seed=seed)
-
-    # Iterate over dataset and make sure there are no TimeoutErrors
-    for _ in dataset:
-        pass
 
 
 def _validate_sample(index: Union[int, slice, List[int], NDArray[np.int64]],
@@ -270,8 +258,7 @@ def test_invalid_index_json_exception(local_remote_dir: Tuple[str, str]):
     with open(os.path.join(local_dir, filename), 'w') as _:
         pass
 
-    with pytest.raises(json.decoder.JSONDecodeError,
-                       match=f'Index file at.*is empty or corrupted'):
+    with pytest.raises(json.decoder.JSONDecodeError, match='Index file at.*is empty or corrupted'):
         _ = StreamingDataset(local=local_dir)
 
 
@@ -288,7 +275,7 @@ def test_empty_shards_index_json_exception(local_remote_dir: Tuple[str, str]):
     with open(os.path.join(local_dir, filename), 'w') as outfile:
         json.dump(content, outfile)
 
-    with pytest.raises(RuntimeError, match=f'Stream contains no samples: .*'):
+    with pytest.raises(RuntimeError, match='Stream contains no samples: .*'):
         _ = StreamingDataset(local=local_dir)
 
 
@@ -298,10 +285,8 @@ def test_accidental_shard_delete_exception(mds_dataset_dir: Any):
     filename = 'shard.00000.mds'
     dataset = StreamingDataset(local=local_dir, remote=remote_dir)
 
-    with pytest.raises(RuntimeError,
-                       match=f'.*Check if the shard file exists in your remote location.*'):
+    with pytest.raises(RuntimeError, match='.*Check if the shard file exists in your remote location.*'):
         for _ in dataset:
             if os.path.exists(os.path.join(local_dir, filename)):
                 os.remove(os.path.join(local_dir, filename))
-            pass
     shutil.rmtree(local_dir, ignore_errors=True)

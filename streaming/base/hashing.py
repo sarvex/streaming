@@ -17,10 +17,11 @@ def _collect() -> Dict[str, Callable[[bytes], Any]]:
     Returns:
         Dict[str, Callable[[bytes], Any]]: Mapping of name to hash.
     """
-    hashes = {}
-    for algo in hashlib.algorithms_available:
-        if hasattr(hashlib, algo) and not algo.startswith('shake_'):
-            hashes[algo] = getattr(hashlib, algo)
+    hashes = {
+        algo: getattr(hashlib, algo)
+        for algo in hashlib.algorithms_available
+        if hasattr(hashlib, algo) and not algo.startswith('shake_')
+    }
     for algo in xxhash.algorithms_available:  # pyright: ignore
         assert algo not in hashes
         hashes[algo] = getattr(xxhash, algo)

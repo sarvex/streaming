@@ -82,13 +82,9 @@ class DistributedTest:
         Returns:
             Dict[str, Any]: A dictionary of arguments
         """
-        # Get fixture / parametrize kwargs from pytest request object
-        test_kwargs = {}
         params = inspect.getfullargspec(self.current_test).args
         params.remove('self')
-        for p in params:
-            test_kwargs[p] = request.getfixturevalue(p)
-        return test_kwargs
+        return {p: request.getfixturevalue(p) for p in params}
 
     def _set_custom_markers(self, request: FixtureRequest) -> None:
         """Get the custom markers and overrides it.

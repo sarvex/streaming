@@ -34,14 +34,15 @@ class LocalDataset(Array, Dataset):
         filename = os.path.join(local, split, get_index_basename())  # pyright: ignore
         obj = json.load(open(filename))
         if obj['version'] != 2:
-            raise ValueError(f'Unsupported streaming data version: {obj["version"]}. ' +
-                             f'Expected version 2.')
+            raise ValueError(
+                f'Unsupported streaming data version: {obj["version"]}. Expected version 2.'
+            )
 
         self.shards = []
         for info in obj['shards']:
             shard = reader_from_json(local, split, info)
             self.shards.append(shard)
-        self.num_samples = sum([shard.samples for shard in self.shards])
+        self.num_samples = sum(shard.samples for shard in self.shards)
 
         shard_sizes = np.array([x.samples for x in self.shards])
         self.spanner = Spanner(shard_sizes)

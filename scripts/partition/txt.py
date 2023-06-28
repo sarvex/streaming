@@ -46,9 +46,9 @@ def main(args: Namespace) -> None:
             pre = '-' * pre_cols + '-+-'
             _, _, _, batches, samples = ids.shape
             table = []
-            for batch in range(batches):
+            for _ in range(batches):
                 row = []
-                for sample in range(samples):
+                for _ in range(samples):
                     cell = '-' * max_digits
                     row.append(cell)
                 row = '-'.join(row)
@@ -60,18 +60,12 @@ def main(args: Namespace) -> None:
                 print(' ' * pre_cols + ' |')
             for k, worker in enumerate(device):
                 table = []
-                if not k:
-                    s = f'Node {i} Device {j}'
-                else:
-                    s = ' ' * pre_cols
-                pre = s + ' | '
+                s = f'Node {i} Device {j}' if not k else ' ' * pre_cols
+                pre = f'{s} | '
                 for batch in worker:
                     row = []
                     for sample in batch:
-                        if 0 <= sample:
-                            cell = str(sample)
-                        else:
-                            cell = '-'
+                        cell = str(sample) if sample >= 0 else '-'
                         cell = cell.rjust(max_digits)
                         row.append(cell)
                     row = ' '.join(row)

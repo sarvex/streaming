@@ -61,12 +61,8 @@ class Array:
             if -self.size <= stop < 0:
                 stop += self.size
 
-        if at.step is None:
-            step = 1
-        else:
-            step = at.step
-
-        if 0 < step:
+        step = 1 if at.step is None else at.step
+        if step > 0:
             start = max(start, 0)
             stop = min(stop, self.size)
         else:

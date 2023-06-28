@@ -46,17 +46,16 @@ def get_partitions_orig(num_samples: int,
         raise ValueError(f'Resuming further into the dataset ({drop_first}) than it has samples ' +
                          f'({num_samples})')
 
-    if num_canonical_nodes < num_physical_nodes:
-        if num_physical_nodes % num_canonical_nodes:
-            raise ValueError('Either canonical or physical nodes must be evenly divisible by ' +
-                             'the other, otherwise striping slices of shards over nodes may ' +
-                             'lead to each node downloading all shards')
-    elif num_physical_nodes < num_canonical_nodes:
-        if num_canonical_nodes % num_physical_nodes:
-            raise ValueError('Either canonical or physical nodes must be evenly divisible by ' +
-                             'the other, otherwise striping slices of shards over nodes may ' +
-                             'lead to each node downloading all shards')
-
+    if (
+        num_canonical_nodes < num_physical_nodes
+        and num_physical_nodes % num_canonical_nodes
+        or num_canonical_nodes >= num_physical_nodes
+        and num_physical_nodes < num_canonical_nodes
+        and num_canonical_nodes % num_physical_nodes
+    ):
+        raise ValueError('Either canonical or physical nodes must be evenly divisible by ' +
+                         'the other, otherwise striping slices of shards over nodes may ' +
+                         'lead to each node downloading all shards')
     batch_size = batch_size or 1
 
     # If drop_first isn't a multiple of num_physical_nodes, round down to make it divisible.
@@ -71,8 +70,7 @@ def get_partitions_orig(num_samples: int,
     padding = 0
     if num_canonical_nodes < num_physical_nodes:
         node_ratio = num_physical_nodes // num_canonical_nodes
-        overflow = samples_per_canonical_node % node_ratio
-        if overflow:
+        if overflow := samples_per_canonical_node % node_ratio:
             padding = node_ratio - overflow
     padded_samples_per_canonical_node = samples_per_canonical_node + padding
 
@@ -117,12 +115,7 @@ def get_partitions_orig(num_samples: int,
     ids = ids.reshape(-1, num_physical_nodes)
     ids = ids.transpose()
 
-    # Interleave the node sample ranges over each node's ranks, padding by repeating the last
-    # sample.
-    #
-    # ids: (physical nodes, samples per rank, ranks per node).
-    overflow = ids.shape[1] % ranks_per_node
-    if overflow:
+    if overflow := ids.shape[1] % ranks_per_node:
         underflow = ranks_per_node - overflow
         last = ids[:, -ranks_per_node - underflow + 1:-ranks_per_node + 1]
         ids = np.concatenate([ids, last], 1)
@@ -134,8 +127,7 @@ def get_partitions_orig(num_samples: int,
     overflow = ids.shape[1] % workers_per_rank
     rounded_num_samples = math.ceil(
         ids.shape[1] / (workers_per_rank * batch_size)) * (workers_per_rank * batch_size)
-    overflow = rounded_num_samples - ids.shape[1]
-    if overflow:
+    if overflow := rounded_num_samples - ids.shape[1]:
         last = np.full((num_physical_nodes, overflow, ranks_per_node), -1, np.int64)
         ids = np.concatenate([ids, last], 1)
 

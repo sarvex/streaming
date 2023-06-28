@@ -3,6 +3,7 @@
 
 """Streaming package setup."""
 
+
 import os
 
 import setuptools
@@ -20,11 +21,11 @@ with open(os.path.join(os.path.dirname(__file__), 'streaming', '_version.py')) a
 with open('README.md', 'r', encoding='utf-8') as fh:
     long_description = fh.read()
 
+start_tag = '<!-- SETUPTOOLS_LONG_DESCRIPTION_HIDE_BEGIN -->'
+end_tag = '<!-- SETUPTOOLS_LONG_DESCRIPTION_HIDE_END -->'
 # Hide the content between <!-- SETUPTOOLS_LONG_DESCRIPTION_HIDE_BEGIN --> and
 # <!-- SETUPTOOLS_LONG_DESCRIPTION_HIDE_END --> tags in the README
 while True:
-    start_tag = '<!-- SETUPTOOLS_LONG_DESCRIPTION_HIDE_BEGIN -->'
-    end_tag = '<!-- SETUPTOOLS_LONG_DESCRIPTION_HIDE_END -->'
     start = long_description.find(start_tag)
     end = long_description.find(end_tag)
     if start == -1:
@@ -60,39 +61,40 @@ install_requires = [
     'azure-identity>=1.13.0',
 ]
 
-extra_deps = {}
+extra_deps = {
+    'dev': [
+        'datasets>=2.4.0,<3',
+        'docformatter>=1.4',
+        'jupyter==1.0.0',
+        'pre-commit>=2.18.1,<4',
+        'pytest==7.4.0',
+        'pytest_codeblocks==0.16.1',
+        'pytest-cov>=4,<5',
+        'toml==0.10.2',
+        'yamllint==1.32.0',
+        'moto>=4.0,<5',
+        'fastapi==0.98.0',
+        'pydantic==1.10.9',
+        'uvicorn==0.22.0',
+    ],
+    'docs': [
+        'GitPython==3.1.31',
+        'docutils==0.18.1',
+        'furo==2023.5.20',
+        'myst-parser==2.0.0',
+        'nbsphinx==0.9.2',
+        'pandoc==2.3',
+        'pypandoc==1.11',
+        'sphinx-argparse==0.4.0',
+        'sphinx-copybutton==0.5.2',
+        'sphinx==6.2.1',
+        'sphinx-tabs==3.4.1',
+    ],
+}
 
-extra_deps['dev'] = [
-    'datasets>=2.4.0,<3',
-    'docformatter>=1.4',
-    'jupyter==1.0.0',
-    'pre-commit>=2.18.1,<4',
-    'pytest==7.4.0',
-    'pytest_codeblocks==0.16.1',
-    'pytest-cov>=4,<5',
-    'toml==0.10.2',
-    'yamllint==1.32.0',
-    'moto>=4.0,<5',
-    'fastapi==0.98.0',
-    'pydantic==1.10.9',
-    'uvicorn==0.22.0',
-]
-
-extra_deps['docs'] = [
-    'GitPython==3.1.31',
-    'docutils==0.18.1',
-    'furo==2023.5.20',
-    'myst-parser==2.0.0',
-    'nbsphinx==0.9.2',
-    'pandoc==2.3',
-    'pypandoc==1.11',
-    'sphinx-argparse==0.4.0',
-    'sphinx-copybutton==0.5.2',
-    'sphinx==6.2.1',
-    'sphinx-tabs==3.4.1',
-]
-
-extra_deps['all'] = sorted(set(dep for deps in extra_deps.values() for dep in deps))
+extra_deps['all'] = sorted(
+    {dep for deps in extra_deps.values() for dep in deps}
+)
 
 package_name = os.environ.get('MOSAIC_PACKAGE_NAME', 'mosaicml-streaming')
 

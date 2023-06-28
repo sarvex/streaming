@@ -165,7 +165,7 @@ def test_mix_proportion_equal(root: str):
     dataset = StreamingDataset(streams=streams, num_canonical_nodes=1)
     assert dataset.num_samples == 8
     assert walk(dataset) == [0, 1, 2, 3, 4, 5, 6, 7]
-    for i, stream in enumerate(streams):
+    for stream in streams:
         assert float_eq(stream.proportion, 0.25)
         assert stream.repeat == 1
         assert stream.choose == 2

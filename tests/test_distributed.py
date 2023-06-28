@@ -117,7 +117,7 @@ class TestInit(DistributedTest):
                                 batch_size) if drop_last else math.ceil(
                                     device_compatible_num_samples / batch_size)
         expected_num_samples = expected_num_batches * batch_size if drop_last else \
-            device_compatible_num_samples
+                device_compatible_num_samples
 
         # Iterate over DataLoader
         rcvd_batches = 0
@@ -127,13 +127,14 @@ class TestInit(DistributedTest):
             rcvd_batches += 1
 
             # Every batch should be complete except (maybe) final one
-            if batch_ix + 1 < expected_num_batches:
+            if (
+                batch_ix + 1 >= expected_num_batches
+                and drop_last
+                or batch_ix + 1 < expected_num_batches
+            ):
                 assert len(batch['id']) == per_rank_batch_size
             else:
-                if drop_last:
-                    assert len(batch['id']) == per_rank_batch_size
-                else:
-                    assert len(batch['id']) <= per_rank_batch_size
+                assert len(batch['id']) <= per_rank_batch_size
             device_batch_ids = [int(uid) for uid in batch['id']]
             all_device_batch_ids = ms_dist.all_gather_object(device_batch_ids)
 

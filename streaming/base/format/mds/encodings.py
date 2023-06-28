@@ -179,14 +179,8 @@ class NDArray(Encoding):
         """
         args = text.split(':') if text else []
         assert len(args) in {0, 1, 2}
-        if 1 <= len(args):
-            dtype = args[0]
-        else:
-            dtype = None
-        if 2 <= len(args):
-            shape = tuple(map(int, args[1].split(',')))
-        else:
-            shape = None
+        dtype = args[0] if args else None
+        shape = tuple(map(int, args[1].split(','))) if len(args) >= 2 else None
         return cls(dtype, shape)
 
     @classmethod
@@ -229,26 +223,23 @@ class NDArray(Encoding):
         if self.dtype is None:
             part = bytes([dtype_int])
             parts.append(part)
-        else:
-            if obj.dtype != self.dtype:
-                raise ValueError('Wrong dtype: expected {self.dtype}, got {obj.dtype.name}.')
+        elif obj.dtype != self.dtype:
+            raise ValueError('Wrong dtype: expected {self.dtype}, got {obj.dtype.name}.')
 
         # Encode shape, if not given in header.
         if self.shape is None:
             ndim = len(obj.shape)
-            if 64 <= ndim:
+            if ndim >= 64:
                 raise ValueError('Array has too many axes: maximum 63, got {ndim}.')
             shape_arr = np.array(obj.shape, np.int64)
             shape_dtype = self._rightsize_shape_dtype(shape_arr)
             shape_dtype_int = self._shape_dtype2int[shape_dtype]
-            byte = (ndim << 2) | shape_dtype_int
-            part = bytes([byte])
+            part = bytes([(ndim << 2) | shape_dtype_int])
             parts.append(part)
             part = shape_arr.astype(shape_dtype).tobytes()
             parts.append(part)
-        else:
-            if obj.shape != self.shape:
-                raise ValueError('Wrong shape: expected {self.shape}, got {obj.shape}.')
+        elif obj.shape != self.shape:
+            raise ValueError('Wrong shape: expected {self.shape}, got {obj.shape}.')
 
         # Encode the array values.
         part = obj.tobytes()
@@ -517,9 +508,7 @@ def _get_coder(encoding: str) -> Optional[Encoding]:
     index = encoding.find(':')
     if index == -1:
         cls = _encodings.get(encoding)
-        if cls is None:
-            return None
-        return cls()
+        return None if cls is None else cls()
     name = encoding[:index]
     config = encoding[index + 1:]
     return _encodings[name].from_str(config)

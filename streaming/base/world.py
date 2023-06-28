@@ -45,10 +45,9 @@ class World:
 
         self.node = self.rank // self.ranks_per_node
         self.num_nodes = self.num_ranks // self.ranks_per_node
-        self.is_multinode = 1 < self.num_nodes
+        self.is_multinode = self.num_nodes > 1
 
-        info = get_worker_info()
-        if info:
+        if info := get_worker_info():
             self.worker_of_rank = info.id
             self.workers_per_rank = info.num_workers
         else:

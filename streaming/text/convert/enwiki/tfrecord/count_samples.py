@@ -13,10 +13,7 @@ def parse_args():
 
 def get_num_samples(filename):
     dataset = tf.data.TFRecordDataset(filename)
-    count = 0
-    for _ in dataset:
-        count += 1
-    return count
+    return sum(1 for _ in dataset)
 
 
 def main(args):
