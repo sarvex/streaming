@@ -96,7 +96,7 @@ class StreamingPile(StreamingDataset):
                  max_seq_len: int,
                  group_method: str) -> None:
         if group_method not in ['truncate']:
-            raise ValueError(f'Only group_method="truncate" is supported at this time.')
+            raise ValueError('Only group_method="truncate" is supported at this time.')
 
         super().__init__(remote=remote,
                          local=local,
@@ -155,6 +155,4 @@ class StreamingPile(StreamingDataset):
             Any: Sample data.
         """
         text_sample = super().get_item(idx)
-        token_sample = self._tokenize(text_sample)
-        # Skip any token grouping, currently only supporting group_method='truncate'
-        return token_sample
+        return self._tokenize(text_sample)

@@ -96,7 +96,7 @@ class StreamingC4(StreamingDataset):
                  max_seq_len: int,
                  group_method: str) -> None:
         if group_method not in {'truncate'}:
-            raise ValueError(f"group_method='{group_method}' must be one of {'truncate'}.")
+            raise ValueError(f"group_method='{group_method}' must be one of truncate.")
 
         super().__init__(remote=remote,
                          local=local,
@@ -132,12 +132,11 @@ class StreamingC4(StreamingDataset):
         Args:
             text_sample (Dict[str, Any]): Sample to tokenize.
         """
-        if self.group_method == 'truncate':
-            truncation = True
-            padding = 'max_length'
-            max_length = self.max_seq_len
-        else:
+        if self.group_method != 'truncate':
             raise ValueError(f'Got unknown group_method={self.group_method}.')
+        truncation = True
+        padding = 'max_length'
+        max_length = self.max_seq_len
         return self.tokenizer(text_sample['text'],
                               truncation=truncation,
                               padding=padding,
@@ -153,6 +152,4 @@ class StreamingC4(StreamingDataset):
             Any: Sample data.
         """
         text_sample = super().get_item(idx)
-        token_sample = self._tokenize(text_sample)
-        # Skip any token grouping, currently only supporting group_method='truncate'
-        return token_sample
+        return self._tokenize(text_sample)

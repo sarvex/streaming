@@ -141,22 +141,24 @@ class Reader(Array, ABC):
             is_zip_present = True
 
         # Do we keep_zip?
-        if keep_zip:
-            # If we can keep_zip, and we do, and have either raw or zip, we must have the other one
-            # too, because they are downloaded and decompressed together.
-            if self.compression and (is_zip_present != is_raw_present):
-                if is_raw_present:
-                    is_raw_present = False
-                    self._evict_raw()
-                elif is_zip_present:
-                    is_zip_present = False
-                    self._evict_zip()
-        else:
-            # If we don't keep_zip, drop any zip files.
-            if is_zip_present:
-                is_zip_present = False
-                self._evict_zip()
-
+        if (
+            keep_zip
+            and self.compression
+            and (is_zip_present != is_raw_present)
+            and is_raw_present
+        ):
+            is_raw_present = False
+            self._evict_raw()
+        elif (
+            keep_zip
+            and self.compression
+            and is_zip_present != is_raw_present
+            and is_zip_present
+            or not keep_zip
+            and is_zip_present
+        ):
+            is_zip_present = False
+            self._evict_zip()
         # Now, the shard is either entirely or not at all present given keep_zip.
         return is_raw_present
 
@@ -166,10 +168,7 @@ class Reader(Array, ABC):
         Returns:
             int: Size in bytes.
         """
-        size = 0
-        for info, _ in self.file_pairs:
-            size += info.bytes
-        return size
+        return sum(info.bytes for info, _ in self.file_pairs)
 
     def get_zip_size(self) -> Optional[int]:
         """Get the zip (compressed) size of this shard, if compression was used.
@@ -212,14 +211,11 @@ class Reader(Array, ABC):
         Returns:
             int: Size in bytes.
         """
-        if self.compression:
-            if keep_zip:
-                size = self.get_full_size()
-            else:
-                size = self.get_raw_size()
-        else:
-            size = self.get_raw_size()
-        return size
+        return (
+            self.get_full_size()
+            if self.compression and keep_zip
+            else self.get_raw_size()
+        )
 
     @abstractmethod
     def decode_sample(self, data: bytes) -> Dict[str, Any]:

@@ -87,11 +87,7 @@ def get_matches(filters: List[str], text: str) -> List[str]:
     Returns:
         List[str]: List of filters that matched.
     """
-    matches = []
-    for substr in filters:
-        if substr in text:
-            matches.append(substr)
-    return matches
+    return [substr for substr in filters if substr in text]
 
 
 def each_todo(filename: str, filters: List[str]) -> Iterator[Dict[str, Any]]:
@@ -107,8 +103,7 @@ def each_todo(filename: str, filters: List[str]) -> Iterator[Dict[str, Any]]:
     keys = next(it)
     for values in it:
         obj = dict(zip(keys, values))
-        matches = get_matches(filters, obj['name'])
-        if matches:
+        if matches := get_matches(filters, obj['name']):
             obj['matches'] = matches  # pyright: ignore
             yield obj
 

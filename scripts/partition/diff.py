@@ -71,12 +71,8 @@ def main(args: Namespace) -> None:
     total = 0
     for c in canonical_node_counts:
         for p in physical_node_counts:
-            if c < p:
-                if p % c:
-                    continue
-            elif p < c:
-                if c % p:
-                    continue
+            if c < p and p % c or c >= p and p < c and c % p:
+                continue
             total += 1
     total *= np.prod(shape[2:])
 
@@ -85,12 +81,8 @@ def main(args: Namespace) -> None:
     with tqdm(total=total, leave=False) as pbar:
         for c in canonical_node_counts:
             for p in physical_node_counts:
-                if c < p:
-                    if p % c:
-                        continue
-                elif p < c:
-                    if c % p:
-                        continue
+                if c < p and p % c or c >= p and p < c and c % p:
+                    continue
                 for r in ranks_per_nodes:
                     for w in workers_per_ranks:
                         for b in batch_sizes:

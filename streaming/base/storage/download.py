@@ -84,10 +84,9 @@ def download_from_s3(remote: str, local: str, timeout: float) -> None:
         _download_file(unsigned=True, extra_args=extra_args)
     except ClientError as e:
         if e.response['Error']['Code'] in BOTOCORE_CLIENT_ERROR_CODES:
-            e.args = (f'Object {remote} not found! Either check the bucket path or the bucket ' +
-                      f'permission. If the bucket is a requester pays bucket, then provide the ' +
-                      f'bucket name to the environment variable ' +
-                      f'`MOSAICML_STREAMING_AWS_REQUESTER_PAYS`.',)
+            e.args = (
+                f'Object {remote} not found! Either check the bucket path or the bucket permission. If the bucket is a requester pays bucket, then provide the bucket name to the environment variable `MOSAICML_STREAMING_AWS_REQUESTER_PAYS`.',
+            )
             raise e
         elif e.response['Error']['Code'] == '400':
             # Public S3 buckets without credentials
@@ -130,7 +129,7 @@ def download_from_sftp(remote: str, local: str) -> None:
     port = port if port else 22
 
     # Local tmp
-    local_tmp = local + '.tmp'
+    local_tmp = f'{local}.tmp'
     if os.path.exists(local_tmp):
         os.remove(local_tmp)
 
@@ -207,11 +206,11 @@ def download_from_oci(remote: str, local: str) -> None:
         raise ValueError(
             f'Expected obj.scheme to be `oci`, instead, got {obj.scheme} for remote={remote}')
 
-    bucket_name = obj.netloc.split('@' + namespace)[0]
+    bucket_name = obj.netloc.split(f'@{namespace}')[0]
     # Remove leading and trailing forward slash from string
     object_path = obj.path.strip('/')
     object_details = client.get_object(namespace, bucket_name, object_path)
-    local_tmp = local + '.tmp'
+    local_tmp = f'{local}.tmp'
     with open(local_tmp, 'wb') as f:
         for chunk in object_details.data.raw.stream(2048**2, decode_content=False):
             f.write(chunk)
@@ -287,7 +286,7 @@ def download_from_local(remote: str, local: str) -> None:
         remote (str): Remote path (local filesystem).
         local (str): Local path (local filesystem).
     """
-    local_tmp = local + '.tmp'
+    local_tmp = f'{local}.tmp'
     if os.path.exists(local_tmp):
         os.remove(local_tmp)
     shutil.copy(remote, local_tmp)

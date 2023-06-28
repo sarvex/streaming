@@ -75,12 +75,14 @@ class XSVReader(SplitReader):
         """
         args = deepcopy(obj)
         if args['version'] != 2:
-            raise ValueError(f'Unsupported streaming data version: {args["version"]}. ' +
-                             f'Expected version 2.')
+            raise ValueError(
+                f'Unsupported streaming data version: {args["version"]}. Expected version 2.'
+            )
         del args['version']
         if args['format'] != 'xsv':
-            raise ValueError(f'Unsupported data format: {args["format"]}. ' +
-                             f'Expected to be `xsv`.')
+            raise ValueError(
+                f'Unsupported data format: {args["format"]}. Expected to be `xsv`.'
+            )
         del args['format']
         args['dirname'] = dirname
         args['split'] = split
@@ -101,10 +103,12 @@ class XSVReader(SplitReader):
         text = data.decode('utf-8')
         text = text[:-len(self.newline)]
         parts = text.split(self.separator)
-        sample = {}
-        for name, encoding, part in zip(self.column_names, self.column_encodings, parts):
-            sample[name] = xsv_decode(encoding, part)
-        return sample
+        return {
+            name: xsv_decode(encoding, part)
+            for name, encoding, part in zip(
+                self.column_names, self.column_encodings, parts
+            )
+        }
 
     def get_sample_data(self, idx: int) -> bytes:
         """Get the raw sample data at the index.
@@ -184,12 +188,14 @@ class CSVReader(XSVReader):
         """
         args = deepcopy(obj)
         if args['version'] != 2:
-            raise ValueError(f'Unsupported streaming data version: {args["version"]}. ' +
-                             f'Expected version 2.')
+            raise ValueError(
+                f'Unsupported streaming data version: {args["version"]}. Expected version 2.'
+            )
         del args['version']
         if args['format'] != 'csv':
-            raise ValueError(f'Unsupported data format: {args["format"]}. ' +
-                             f'Expected to be `csv`.')
+            raise ValueError(
+                f'Unsupported data format: {args["format"]}. Expected to be `csv`.'
+            )
         del args['format']
         args['dirname'] = dirname
         args['split'] = split
@@ -255,12 +261,14 @@ class TSVReader(XSVReader):
         """
         args = deepcopy(obj)
         if args['version'] != 2:
-            raise ValueError(f'Unsupported streaming data version: {args["version"]}. ' +
-                             f'Expected version 2.')
+            raise ValueError(
+                f'Unsupported streaming data version: {args["version"]}. Expected version 2.'
+            )
         del args['version']
         if args['format'] != 'tsv':
-            raise ValueError(f'Unsupported data format: {args["format"]}. ' +
-                             f'Expected to be `tsv`.')
+            raise ValueError(
+                f'Unsupported data format: {args["format"]}. Expected to be `tsv`.'
+            )
         del args['format']
         args['dirname'] = dirname
         args['split'] = split

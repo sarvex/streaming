@@ -110,14 +110,15 @@ def _check_and_find(my_locals_set: Set[str]) -> int:
         except FileNotFoundError:
             break
         their_locals_set = _unpack_locals(bytes(shm.buf))
-        both = my_locals_set & their_locals_set
-        if both:
-            raise ValueError(f'Reused local directory: {sorted(my_locals_set)} vs ' +
-                             f'{sorted(their_locals_set)}. Provide a different one. If using ' +
-                             f'a unique local directory, try deleting the local directory and ' +
-                             f'call `streaming.base.util.clean_stale_shared_memory()` only once ' +
-                             f'in your script to clean up the stale shared memory before ' +
-                             f'instantiation of `StreamingDataset`.')
+        if both := my_locals_set & their_locals_set:
+            raise ValueError(
+                f'Reused local directory: {sorted(my_locals_set)} vs '
+                + f'{sorted(their_locals_set)}. Provide a different one. If using '
+                + 'a unique local directory, try deleting the local directory and '
+                + 'call `streaming.base.util.clean_stale_shared_memory()` only once '
+                + 'in your script to clean up the stale shared memory before '
+                + 'instantiation of `StreamingDataset`.'
+            )
     return prefix_int
 
 
@@ -183,8 +184,9 @@ def get_shm_prefix(my_locals: List[str],
             try:
                 shm = SharedMemory(name, False)
             except FileNotFoundError:
-                raise RuntimeError(f'Internal error: shared memory prefix was not registered by ' +
-                                   f'local leader')
+                raise RuntimeError(
+                    f'Internal error: shared memory prefix was not registered by local leader'
+                )
             their_locals_set = _unpack_locals(bytes(shm.buf))
             if my_locals_set == their_locals_set:
                 break

@@ -93,7 +93,7 @@ class SharedBarrier:
         Args:
             flag (bool): The flag value.
         """
-        self._arr[2] = bool(flag)
+        self._arr[2] = flag
 
     def __call__(self, num_procs: int) -> None:
         """A set number of processes enter, wait, and exit the barrier.

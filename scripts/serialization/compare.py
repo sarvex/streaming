@@ -251,8 +251,7 @@ def parquet_read_rand(dirname: str) -> Iterator[Dict[str, Any]]:
     pairs = []
     for i, f in enumerate(ff):
         df = pd.read_parquet(f)
-        for j in range(len(df)):
-            pairs.append((i, j))
+        pairs.extend((i, j) for j in range(len(df)))
     np.random.shuffle(pairs)
     for i, j in pairs:
         df = dfs[i]

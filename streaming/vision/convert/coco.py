@@ -91,10 +91,9 @@ class _COCODetection(Dataset):
         self.images = {}
 
         self.label_map = {}
-        self.label_info = {}
         # 0 stands for the background
         cnt = 0
-        self.label_info[cnt] = 'background'
+        self.label_info = {cnt: 'background'}
         for cat in self.data['categories']:
             cnt += 1
             self.label_map[cat['id']] = cnt
@@ -103,10 +102,10 @@ class _COCODetection(Dataset):
         # build inference for images
         for img in self.data['images']:
             img_id = img['id']
-            img_name = img['file_name']
-            img_size = (img['height'], img['width'])
             if img_id in self.images:
                 raise Exception('duplicated image record')
+            img_name = img['file_name']
+            img_size = (img['height'], img['width'])
             self.images[img_id] = (img_name, img_size, [])
 
         # read bboxes

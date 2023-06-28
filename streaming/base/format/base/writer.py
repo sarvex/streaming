@@ -86,8 +86,9 @@ class Writer(ABC):
 
         if size_limit:
             if size_limit < 0:
-                raise ValueError(f'`size_limit` must be greater than zero, instead, ' +
-                                 f'found as {size_limit}.')
+                raise ValueError(
+                    f'`size_limit` must be greater than zero, instead, found as {size_limit}.'
+                )
         else:
             size_limit = None
 
@@ -165,9 +166,7 @@ class Writer(ABC):
         Returns:
             Dict[str, Any]: File metadata.
         """
-        hashes = {}
-        for algo in self.hashes:
-            hashes[algo] = get_hash(algo, data)
+        hashes = {algo: get_hash(algo, data) for algo in self.hashes}
         return {'basename': basename, 'bytes': len(data), 'hashes': hashes}
 
     def _process_file(self, raw_data: bytes, raw_basename: str,
@@ -272,8 +271,7 @@ class Writer(ABC):
         Raises:
             exception: re-raise an exception
         """
-        exception = future.exception()
-        if exception:
+        if exception := future.exception():
             # Set the event to let other pool thread know about the exception
             self.event.set()
             # re-raise the same exception
@@ -370,7 +368,7 @@ class JointWriter(Writer):
             'raw_data': raw_data_info,
             'zip_data': zip_data_info
         }
-        obj.update(self.get_config())
+        obj |= self.get_config()
         self.shards.append(obj)
         # Execute the task if there is no exception in any of the async threads.
         if not self.event.is_set():
@@ -454,7 +452,7 @@ class SplitWriter(Writer):
             'raw_meta': raw_meta_info,
             'zip_meta': zip_meta_info
         }
-        obj.update(self.get_config())
+        obj |= self.get_config()
         self.shards.append(obj)
 
         # Execute the task if there is no exception in any of the async threads.

@@ -68,12 +68,14 @@ class MDSReader(JointReader):
         """
         args = deepcopy(obj)
         if args['version'] != 2:
-            raise ValueError(f'Unsupported streaming data version: {args["version"]}. ' +
-                             f'Expected version 2.')
+            raise ValueError(
+                f'Unsupported streaming data version: {args["version"]}. Expected version 2.'
+            )
         del args['version']
         if args['format'] != 'mds':
-            raise ValueError(f'Unsupported data format: {args["format"]}. ' +
-                             f'Expected to be `mds`.')
+            raise ValueError(
+                f'Unsupported data format: {args["format"]}. Expected to be `mds`.'
+            )
         del args['format']
         args['dirname'] = dirname
         args['split'] = split
@@ -94,12 +96,10 @@ class MDSReader(JointReader):
         sizes = []
         idx = 0
         for key, size in zip(self.column_names, self.column_sizes):
-            if size:
-                sizes.append(size)
-            else:
+            if not size:
                 size, = np.frombuffer(data[idx:idx + 4], np.uint32)
-                sizes.append(size)
                 idx += 4
+            sizes.append(size)
         sample = {}
         for key, encoding, size in zip(self.column_names, self.column_encodings, sizes):
             value = data[idx:idx + size]

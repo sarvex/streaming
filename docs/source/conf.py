@@ -104,8 +104,7 @@ def _get_commit_sha() -> str:
         else:
             # If on CI, error.
             raise RuntimeError(warning_msg)
-    _commit_sha = repo.commit().hexsha
-    return _commit_sha
+    return repo.commit().hexsha
 
 
 _COMMIT_SHA = _get_commit_sha()
@@ -113,7 +112,10 @@ _COMMIT_SHA = _get_commit_sha()
 # Don't show notebook output in the docs
 nbsphinx_execute = 'never'
 
-notebook_path = 'mosaicml/streaming/blob/' + _COMMIT_SHA + '/{{ env.doc2path(env.docname, base=None) }}'
+notebook_path = (
+    f'mosaicml/streaming/blob/{_COMMIT_SHA}'
+    + '/{{ env.doc2path(env.docname, base=None) }}'
+)
 
 # Include an "Open in Colab" link at the beginning of all notebooks
 nbsphinx_prolog = f"""
@@ -244,9 +246,7 @@ def skip_redundant_namedtuple_attributes(
 ):
     """Hide the default, duplicate attributes for named tuples."""
     del app, what, name, skip, options
-    if '_tuplegetter' in obj.__class__.__name__:
-        return True
-    return None
+    return True if '_tuplegetter' in obj.__class__.__name__ else None
 
 
 with open(os.path.join(os.path.dirname(__file__), 'doctest_fixtures.py'), 'r') as f:
@@ -282,22 +282,18 @@ def _auto_rst_for_module(module: types.ModuleType, exclude_members: List[Any]) -
         The rst content for the module
     """
     name = module.__name__
-    lines = []
-
     functions: List[Tuple[str, types.FunctionType]] = []
     exceptions: List[Tuple[str, Type[BaseException]]] = []
     classes: List[Tuple[str, Type[object]]] = []
     methods: List[Tuple[str, types.MethodType]] = []
     attributes: List[Tuple[str, object]] = []
 
-    # add title and module docstring
-    lines.append(f'{name}')
-    lines.append(f'{"=" * len(name)}\n')
-    lines.append(f'.. automodule:: {name}\n')
-
-    # set prefix so that we can use short names in the autosummaries
-    lines.append(f'.. currentmodule:: {name}')
-
+    lines = [
+        f'{name}',
+        f'{"=" * len(name)}\n',
+        f'.. automodule:: {name}\n',
+        f'.. currentmodule:: {name}',
+    ]
     try:
         all_members = list(module.__all__)
     except AttributeError:
@@ -338,16 +334,16 @@ def _auto_rst_for_module(module: types.ModuleType, exclude_members: List[Any]) -
     classes.sort(key=lambda x: x[0])
     attributes.sort(key=lambda x: x[0])
 
-    for category, category_name in ((functions, 'Functions'), (classes, 'Classes'),
-                                    (exceptions, 'Exceptions')):
-        sphinx_lines = []
-        for item_name, _ in category:
-            sphinx_lines.append(f'      {item_name}')
-        if len(sphinx_lines) > 0:
-            lines.append(f'\n.. rubric:: {category_name}\n')
-            lines.append('.. autosummary::')
-            lines.append('      :toctree: generated')
-            lines.append('      :nosignatures:')
+    for category, category_name in ((functions, 'Functions'), (classes, 'Classes'), (exceptions, 'Exceptions')):
+        if sphinx_lines := [f'      {item_name}' for item_name, _ in category]:
+            lines.extend(
+                (
+                    f'\n.. rubric:: {category_name}\n',
+                    '.. autosummary::',
+                    '      :toctree: generated',
+                    '      :nosignatures:',
+                )
+            )
             if category_name in ('Classes'):
                 lines.append('      :template: classtemplate.rst')
             elif category_name == 'Functions':
@@ -404,7 +400,7 @@ def _generate_rst_files_for_modules() -> None:
     document_modules = sorted(document_modules, key=lambda x: x.__name__)
     os.makedirs(module_rst_save_dir, exist_ok=True)
     for module in document_modules:
-        saveas = os.path.join(module_rst_save_dir, module.__name__ + '.rst')
+        saveas = os.path.join(module_rst_save_dir, f'{module.__name__}.rst')
         print(f'Generating rst file {saveas} for module: {module.__name__}')
 
         # avoid duplicate entries in docs. We add torch's _LRScheduler to
@@ -451,10 +447,7 @@ def _recursive_getattr(obj: Any, path: str):
     except AttributeError:
         return None
     path = '.'.join(parts[1:])
-    if path == '':
-        return obj
-    else:
-        return _recursive_getattr(obj, path)
+    return obj if not path else _recursive_getattr(obj, path)
 
 
 def _determine_lineno_of_attribute(module: types.ModuleType, attribute: str):
@@ -504,7 +497,7 @@ class PatchedHTMLTranslator(HTML5Translator):
                 self.in_mailto = True
         else:
             assert 'refid' in node, \
-                   'References must have "refuri" or "refid" attribute.'
+                       'References must have "refuri" or "refid" attribute.'
             atts['href'] = '#' + node['refid']
         if not isinstance(node.parent, nodes.TextElement):
             assert len(node) == 1 and isinstance(node[0], nodes.image)
@@ -517,7 +510,9 @@ class PatchedHTMLTranslator(HTML5Translator):
 
         if node.get('secnumber'):
             self.body.append(
-                ('%s' + self.secnumber_suffix) % '.'.join(map(str, node['secnumber'])))
+                f'%s{self.secnumber_suffix}'
+                % '.'.join(map(str, node['secnumber']))
+            )
 
 
 def setup(app: sphinx.application.Sphinx):

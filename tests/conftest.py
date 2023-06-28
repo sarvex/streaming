@@ -55,8 +55,7 @@ def aws_credentials():
 @pytest.fixture()
 def s3_client(aws_credentials: Any):
     with mock_s3():
-        conn = boto3.client('s3', region_name='us-east-1')
-        yield conn
+        yield boto3.client('s3', region_name='us-east-1')
 
 
 @pytest.fixture()
@@ -85,12 +84,13 @@ def gcs_client(gcs_credentials: Any):
     with patch.dict(os.environ, {'MOTO_S3_CUSTOM_ENDPOINTS': GCS_URL}):
         # Mock needs to be started after the environment variable is patched in
         with mock_s3():
-            conn = boto3.client('s3',
-                                region_name='us-east-1',
-                                endpoint_url=GCS_URL,
-                                aws_access_key_id=os.environ['GCS_KEY'],
-                                aws_secret_access_key=os.environ['GCS_SECRET'])
-            yield conn
+            yield boto3.client(
+                's3',
+                region_name='us-east-1',
+                endpoint_url=GCS_URL,
+                aws_access_key_id=os.environ['GCS_KEY'],
+                aws_secret_access_key=os.environ['GCS_SECRET'],
+            )
 
 
 @pytest.fixture()
@@ -125,8 +125,7 @@ def r2_client(r2_credentials: Any):
     with patch.dict(os.environ, {'MOTO_S3_CUSTOM_ENDPOINTS': R2_URL}):
         # Mock needs to be started after the environment variable is patched in
         with mock_s3():
-            conn = boto3.client('s3', region_name='us-east-1', endpoint_url=R2_URL)
-            yield conn
+            yield boto3.client('s3', region_name='us-east-1', endpoint_url=R2_URL)
 
 
 @pytest.fixture()

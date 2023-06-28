@@ -82,13 +82,17 @@ class CloudUploader:
         """
         if isinstance(out, str):
             obj = urllib.parse.urlparse(out)
-        else:
-            if len(out) != 2:
-                raise ValueError(''.join([
-                    f'Invalid `out` argument. It is either a string of local/remote directory ',
-                    'or a list of two strings with [local, remote].'
-                ]))
+        elif len(out) == 2:
             obj = urllib.parse.urlparse(out[1])
+        else:
+            raise ValueError(
+                ''.join(
+                    [
+                        'Invalid `out` argument. It is either a string of local/remote directory ',
+                        'or a list of two strings with [local, remote].',
+                    ]
+                )
+            )
         if obj.scheme not in UPLOADERS:
             raise ValueError(f'Invalid Cloud provider prefix: {obj.scheme}.')
 
@@ -232,8 +236,9 @@ class S3Uploader(CloudUploader):
             self.s3.head_bucket(Bucket=bucket_name)
         except ClientError as error:
             if error.response['Error']['Code'] == BOTOCORE_CLIENT_ERROR_CODES:
-                error.args = (f'Either bucket `{bucket_name}` does not exist! ' +
-                              f'or check the bucket permission.',)
+                error.args = (
+                    f'Either bucket `{bucket_name}` does not exist! or check the bucket permission.',
+                )
             raise error
 
 
@@ -313,8 +318,9 @@ class GCSUploader(CloudUploader):
             self.gcs_client.head_bucket(Bucket=bucket_name)
         except ClientError as error:
             if error.response['Error']['Code'] == BOTOCORE_CLIENT_ERROR_CODES:
-                error.args = (f'Either bucket `{bucket_name}` does not exist! ' +
-                              f'or check the bucket permission.',)
+                error.args = (
+                    f'Either bucket `{bucket_name}` does not exist! or check the bucket permission.',
+                )
             raise error
 
 
@@ -359,7 +365,7 @@ class OCIUploader(CloudUploader):
         local_filename = os.path.join(self.local, filename)
         remote_filename = os.path.join(self.remote, filename)  # pyright: ignore
         obj = urllib.parse.urlparse(remote_filename)
-        bucket_name = obj.netloc.split('@' + self.namespace)[0]
+        bucket_name = obj.netloc.split(f'@{self.namespace}')[0]
         # Remove leading and trailing forward slash from string
         object_path = obj.path.strip('/')
         logger.debug(f'Uploading to {remote_filename}')
@@ -390,13 +396,14 @@ class OCIUploader(CloudUploader):
         from oci.exceptions import ServiceError
 
         obj = urllib.parse.urlparse(remote)
-        bucket_name = obj.netloc.split('@' + self.namespace)[0]
+        bucket_name = obj.netloc.split(f'@{self.namespace}')[0]
         try:
             self.client.head_bucket(bucket_name=bucket_name, namespace_name=self.namespace)
         except ServiceError as error:
             if error.status == 404:
-                error.args = (f'Bucket `{bucket_name}` does not exist! ' +
-                              f'Check the bucket permission or create the bucket.',)
+                error.args = (
+                    f'Bucket `{bucket_name}` does not exist! Check the bucket permission or create the bucket.',
+                )
             raise error
 
 
@@ -473,8 +480,8 @@ class AzureUploader(CloudUploader):
         bucket_name = urllib.parse.urlparse(remote).netloc
         if self.azure_service.get_container_client(container=bucket_name).exists() is False:
             raise FileNotFoundError(
-                f'Either bucket `{bucket_name}` does not exist! ' +
-                f'or check the bucket permission.',)
+                f'Either bucket `{bucket_name}` does not exist! or check the bucket permission.'
+            )
 
 
 class AzureDataLakeUploader(CloudUploader):
@@ -548,8 +555,8 @@ class AzureDataLakeUploader(CloudUploader):
         container_name = urllib.parse.urlparse(remote).netloc
         if self.azure_service.get_file_system_client(file_system=container_name).exists() is False:
             raise FileNotFoundError(
-                f'Either container `{container_name}` does not exist! ' +
-                f'or check the container permission.',)
+                f'Either container `{container_name}` does not exist! or check the container permission.'
+            )
 
 
 class LocalUploader(CloudUploader):

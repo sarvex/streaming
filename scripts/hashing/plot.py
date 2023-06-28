@@ -94,8 +94,7 @@ def plot_hash_rates(data: List[Tuple[str, int, float]], algo2color: Dict[str, Op
         sizes = algo2sizes[algo]
         times = algo2times[algo]
         ratios = np.array(sizes) / np.array(times)
-        color = algo2color[algo]
-        if color:
+        if color := algo2color[algo]:
             plt.plot(sizes, ratios, c=color, label=algo, lw=line_width)
 
     plt.xscale('log')

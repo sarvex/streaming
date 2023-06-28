@@ -71,13 +71,15 @@ class JSONReader(SplitReader):
         args = deepcopy(obj)
         # Version check.
         if args['version'] != 2:
-            raise ValueError(f'Unsupported streaming data version: {args["version"]}. ' +
-                             f'Expected version 2.')
+            raise ValueError(
+                f'Unsupported streaming data version: {args["version"]}. Expected version 2.'
+            )
         del args['version']
         # Check format.
         if args['format'] != 'json':
-            raise ValueError(f'Unsupported data format: {args["format"]}. ' +
-                             f'Expected to be `json`.')
+            raise ValueError(
+                f'Unsupported data format: {args["format"]}. Expected to be `json`.'
+            )
         del args['format']
         args['dirname'] = dirname
         args['split'] = split

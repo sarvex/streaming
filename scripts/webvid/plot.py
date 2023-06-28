@@ -42,8 +42,9 @@ def main(args: Namespace) -> None:
     plt.plot(times, c='black', label='Baseline: videos inside shards')
     samples = 1 + np.arange(len(times))
     throughput = (times / samples).mean()
-    print(f'Videos inside shards: {throughput:.6f} seconds/sample (calc from {len(times)} ' +
-          f'samples)')
+    print(
+        f'Videos inside shards: {throughput:.6f} seconds/sample (calc from {len(times)} samples)'
+    )
 
     times = np.fromfile(args.outside_gi, np.float32)
     plt.plot(times, c='green', label='Videos separate (__getitem__)')

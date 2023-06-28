@@ -54,13 +54,14 @@ def test_dataloader_single_device(local_remote_dir: Tuple[str, str], batch_size:
         rcvd_batches += 1
 
         # Every batch should be complete except (maybe) final one
-        if batch_ix + 1 < expected_num_batches:
+        if (
+            batch_ix + 1 >= expected_num_batches
+            and drop_last
+            or batch_ix + 1 < expected_num_batches
+        ):
             assert len(batch['id']) == batch_size
         else:
-            if drop_last:
-                assert len(batch['id']) == batch_size
-            else:
-                assert len(batch['id']) <= batch_size
+            assert len(batch['id']) <= batch_size
 
         sample_order.extend(batch['id'][:])
 
@@ -210,7 +211,7 @@ def test_streamingdataloader_mid_epoch_resumption(mds_dataset_dir: Any, batch_si
                                      drop_last=False)
 
     dataloader.load_state_dict(state_dict)  # pyright: ignore
-    for idx, batch in enumerate(dataloader):
+    for batch in dataloader:
         sample_order.extend(batch['id'][:])
 
     # sort the sample to check for missing and duplicate samples

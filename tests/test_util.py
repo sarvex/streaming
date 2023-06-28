@@ -45,7 +45,7 @@ def test_bytes_to_int():
 def test_bytes_to_int_Exception():
     input_data = ['', '12kbb', '27mxb', '79k']
     for value in input_data:
-        with pytest.raises(ValueError, match=f'Unsupported value/suffix.*'):
+        with pytest.raises(ValueError, match='Unsupported value/suffix.*'):
             _ = bytes_to_int(value)
 
 

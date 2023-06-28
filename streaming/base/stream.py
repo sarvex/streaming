@@ -185,12 +185,16 @@ class Stream:
             has_repeat = hasattr(stream, 'repeat')
             has_choose = hasattr(stream, 'choose')
             if not (0 <= has_proportion + has_repeat + has_choose <= 1):
-                raise ValueError(f'Streams must provide at most one of `proportion`, `repeat`, ' +
-                                 f'or `choose` (error in stream {stream_id})')
+                raise ValueError(
+                    f'Streams must provide at most one of `proportion`, `repeat`, or `choose` (error in stream {stream_id})'
+                )
             if is_proportional != has_proportion:
-                raise ValueError(f'Relative (`proportion`) and absolute (`repeat`, `choose`, ' +
-                                 f'none) stream weights are incompatible with each other (error ' +
-                                 f'in stream {stream_id})')
+                raise ValueError(
+                    (
+                        f'Relative (`proportion`) and absolute (`repeat`, `choose`, none) stream weights are incompatible with each other (error '
+                        + f'in stream {stream_id})'
+                    )
+                )
         return is_proportional
 
     @classmethod
@@ -209,11 +213,7 @@ class Stream:
         Returns:
             int: Number of samples to draw per epoch.
         """
-        # Validate provided weights, determining whether they are relative or absolute.
-        are_weights_relative = cls.validate_weights(streams)
-
-        # Derive weights.
-        if are_weights_relative:
+        if are_weights_relative := cls.validate_weights(streams):
             # Relative.
             if not choose_per_epoch:
                 choose_per_epoch = sum(samples_per_stream)
@@ -307,7 +307,7 @@ class Stream:
 
         # Decompress and save that.
         data = decompress(compression, data)  # pyright: ignore
-        tmp_filename = raw_filename + '.tmp'
+        tmp_filename = f'{raw_filename}.tmp'
         with open(tmp_filename, 'wb') as out:
             out.write(data)
         os.rename(tmp_filename, raw_filename)
@@ -379,29 +379,33 @@ class Stream:
         filename = os.path.join(self.local, self.split, basename)  # pyright: ignore
         if world.is_local_leader:
             if self.remote:
-                tmp_filename = self._download_file(basename, basename + '.tmp')
+                tmp_filename = self._download_file(basename, f'{basename}.tmp')
                 os.rename(tmp_filename, filename)
-            else:
-                if not os.path.exists(filename):
-                    raise RuntimeError(f'No `remote` provided, but local file {filename} ' +
-                                       'does not exist either')
+            elif not os.path.exists(filename):
+                raise RuntimeError(f'No `remote` provided, but local file {filename} ' +
+                                   'does not exist either')
         else:
             wait_for_file_to_exist(
-                filename, TICK, self.download_timeout,
-                f'Index file {filename} took too long to download. Either ' +
-                f'increase the `download_timeout` value or check the other ' + f'traceback.')
+                filename,
+                TICK,
+                self.download_timeout,
+                f'Index file {filename} took too long to download. Either increase the `download_timeout` value or check the other traceback.',
+            )
 
         # Load the index.
         try:
             obj = json.load(open(filename))
         except json.decoder.JSONDecodeError as error:
-            error.args = (f'Index file at {filename} is empty or corrupted. ' + error.args[0],)
+            error.args = (
+                f'Index file at {filename} is empty or corrupted. {error.args[0]}',
+            )
             raise error
 
         # Version check.
         if obj['version'] != 2:
-            raise ValueError(f'Unsupported streaming data version: {obj["version"]}. ' +
-                             f'Expected version 2.')
+            raise ValueError(
+                f'Unsupported streaming data version: {obj["version"]}. Expected version 2.'
+            )
 
         # Initialize shard readers according to the loaded info.
         shards = []

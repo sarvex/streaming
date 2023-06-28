@@ -77,10 +77,7 @@ def get_int(x: Union[float, int]) -> int:
     Returns:
         int: The normalized field.
     """
-    if np.isnan(x):
-        return 0
-    else:
-        return int(x)
+    return 0 if np.isnan(x) else int(x)
 
 
 def get_float(x: float) -> float:

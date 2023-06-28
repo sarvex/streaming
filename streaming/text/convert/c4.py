@@ -82,6 +82,8 @@ def get(split: str) -> IterableDataset:
         IterableDataset: An IterableDataset.
     """
 
+
+
     class ShardedC4(IterableDataset):
 
         def __init__(self):
@@ -92,8 +94,7 @@ def get(split: str) -> IterableDataset:
             return len(self.dataset._ex_iterable.kwargs['filepaths'])  # pyright: ignore
 
         def __iter__(self):
-            worker_info = get_worker_info()
-            if worker_info:
+            if worker_info := get_worker_info():
                 num_workers = worker_info.num_workers
                 worker_id = worker_info.id
                 shards = self.dataset._ex_iterable.kwargs['filepaths']  # pyright: ignore
@@ -102,6 +103,7 @@ def get(split: str) -> IterableDataset:
                 self.dataset._ex_iterable.kwargs['filepaths'] = (  # pyright: ignore
                     shards[worker_id::num_workers])
             return iter(self.dataset)
+
 
     return ShardedC4()
 
