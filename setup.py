@@ -87,7 +87,7 @@ extra_deps = {
         'pypandoc==1.11',
         'sphinx-argparse==0.4.0',
         'sphinx-copybutton==0.5.2',
-        'sphinx==7.0.1',
+        'sphinx==7.1.2',
         'sphinx-tabs==3.4.1',
     ],
 }
