@@ -78,7 +78,7 @@ extra_deps = {
         'uvicorn==0.22.0',
     ],
     'docs': [
-        'GitPython==3.1.31',
+        'GitPython==3.1.41',
         'docutils==0.20.1',
         'furo==2023.5.20',
         'myst-parser==2.0.0',
