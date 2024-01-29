@@ -75,7 +75,7 @@ extra_deps = {
         'moto>=4.0,<5',
         'fastapi==0.98.0',
         'pydantic==1.10.9',
-        'uvicorn==0.22.0',
+        'uvicorn==0.27.0.post1',
     ],
     'docs': [
         'GitPython==3.1.31',
